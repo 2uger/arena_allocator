@@ -9,9 +9,9 @@
 #include <sys/mman.h>
 #endif
 
-#define KB(size) (size << 10)
-#define MB(size) (size << 20)
-#define GB(size) (size << 30)
+#define KB(size) ((size_t)size << 10)
+#define MB(size) ((size_t)size << 20)
+#define GB(size) ((size_t)size << 30)
 
 struct Arena
 {
@@ -34,6 +34,9 @@ void *arenaPushZero(struct Arena *arena, size_t sz, size_t align);
 void arenaPop(struct Arena *arena, size_t sz);
 size_t arenaGetSize(struct Arena *arena);
 void arenaClear(struct Arena *arena);
+
+#define arenaPushObj(arena, obj_type) arenaPush(arena, sizeof(obj_type), 0);
+#define arenaPushObjZero(arena, obj_type) arenaPushZero(arena, sizeof(obj_type), 0);
 
 #ifdef LINUX_MMAP
 int arenaInit(struct Arena *arena, size_t sz)
@@ -94,7 +97,7 @@ void *arenaPush(struct Arena *arena, size_t sz, size_t align)
 
 void *arenaPushZero(struct Arena *arena, size_t sz, size_t align)
 {
-    void *addr_before_push = arena->buf + arena->curr_sz;
+    void *addr_before_push = (unsigned char *)arena->buf + arena->curr_sz;
     void *addr_after_push = arenaPush(arena, sz, align);
 
     if (addr_after_push == NULL) return NULL;
